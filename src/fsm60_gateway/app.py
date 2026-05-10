@@ -55,19 +55,18 @@ def build_payload(device_cfg: dict, parsed: dict, selected_word_order: str) -> d
     }
 
 
-def read_device(device_cfg: dict) -> dict:
+def build_reader(device_cfg: dict) -> FSM60ModbusReader:
     modbus_cfg = device_cfg["modbus"]
 
-    reader = FSM60ModbusReader(
+    return FSM60ModbusReader(
         host=modbus_cfg["host"],
         port=modbus_cfg["port"],
         unit_id=modbus_cfg["unit_id"],
         address=modbus_cfg["address"],
         quantity=modbus_cfg["quantity"],
         timeout=modbus_cfg.get("timeout", 1),
+        retries=modbus_cfg.get("retries", 3),
     )
-
-    return reader.read_once()
 
 
 def run(config: dict):
@@ -86,21 +85,22 @@ def run(config: dict):
 
     publisher.connect()
     LOGGER.info("MQTT connected: %s:%s", mqtt_cfg["host"], mqtt_cfg["port"])
+    readers = {device_cfg.get("id", idx): build_reader(device_cfg) for idx, device_cfg in enumerate(devices)}
 
     try:
         while RUNNING:
             cycle_start = time.time()
 
-            for device_cfg in devices:
+            for idx, device_cfg in enumerate(devices):
                 if not RUNNING:
                     break
 
-                device_id = device_cfg.get("id", "unknown")
+                device_id = device_cfg.get("id", idx)
                 topic = device_cfg["mqtt_topic"]
                 word_order = device_cfg.get("word_order", default_word_order)
 
                 try:
-                    parsed = read_device(device_cfg)
+                    parsed = readers[device_id].read_once()
                     payload = build_payload(device_cfg, parsed, word_order)
                     payload_json = publisher.publish(topic, payload)
 
@@ -123,6 +123,8 @@ def run(config: dict):
                 time.sleep(sleep_time)
 
     finally:
+        for reader in readers.values():
+            reader.close()
         publisher.close()
         LOGGER.info("MQTT disconnected")
 

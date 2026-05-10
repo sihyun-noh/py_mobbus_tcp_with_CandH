@@ -36,6 +36,12 @@ cd py_mobbus_tcp_with_CandH
 
 `install.sh`는 현재 프로젝트 디렉터리에 `venv`와 `config.json`을 생성합니다. `/opt`로 복사하지 않으므로 설치 과정에는 `sudo`가 필요하지 않습니다.
 
+테스트 기준 Python 패키지 버전:
+
+```bash
+python3.9 -m pip install "pymodbus==3.6.9" "paho-mqtt<2"
+```
+
 수동 설치:
 
 ```bash
@@ -138,3 +144,36 @@ sudo systemctl restart fsm60-gateway
 ```
 
 일반 설치와 수동 실행에는 `sudo`가 필요하지 않습니다. `sudo`는 `/etc/systemd/system/`에 서비스 파일을 복사하거나 `systemctl`로 서비스를 등록/시작할 때만 필요합니다.
+
+## Modbus 응답 없음 확인
+
+아래 로그는 TCP 연결 이후 Modbus 요청에 대한 응답이 없을 때 발생합니다.
+
+```text
+No response received after 3 retries
+```
+
+주요 확인 항목:
+
+- 장비 IP/포트가 맞는지 확인: `nc -vz 192.168.50.50 7070`
+- 현재 예시의 ID1은 `192.168.50.50:7070` 기준입니다.
+- `unit_id`가 실제 FSM60 또는 RS485 게이트웨이 설정과 같은지 확인
+- 장비 문서의 주소가 1-base인지 0-base인지 확인. 현재 예시는 `address=80`을 그대로 요청합니다.
+- FSM60이 `fc=4(Read Input Registers)`를 지원하는지 확인
+- 정상 동작 확인된 단일 테스트 코드는 `timeout=1`과 PyModbus 기본 재시도값을 사용했습니다.
+- 응답이 느리면 `config.json`의 `timeout`을 `3` 또는 `5`로 늘려 테스트할 수 있습니다.
+- 재시도 횟수는 `retries`로 조절합니다.
+
+예시:
+
+```json
+"modbus": {
+  "host": "192.168.50.50",
+  "port": 7070,
+  "unit_id": 31,
+  "address": 80,
+  "quantity": 4,
+  "timeout": 1,
+  "retries": 3
+}
+```

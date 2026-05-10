@@ -11,13 +11,14 @@
     {
       "device": "FSM60",
       "id": "ID1",
-      "modbus": {
-        "host": "192.168.50.50",
-        "port": 7070,
+        "modbus": {
+          "host": "192.168.50.50",
+          "port": 7070,
         "unit_id": 31,
         "address": 80,
         "quantity": 4,
-        "timeout": 1
+        "timeout": 1,
+        "retries": 3
       },
       "mqtt_topic": "/candh/FSM60/ID1"
     },
@@ -30,7 +31,8 @@
         "unit_id": 31,
         "address": 80,
         "quantity": 4,
-        "timeout": 1
+        "timeout": 1,
+        "retries": 3
       },
       "mqtt_topic": "/candh/FSM60/ID2"
     },
@@ -43,7 +45,8 @@
         "unit_id": 31,
         "address": 80,
         "quantity": 4,
-        "timeout": 1
+        "timeout": 1,
+        "retries": 3
       },
       "mqtt_topic": "/candh/FSM60/ID3"
     },
@@ -56,7 +59,8 @@
         "unit_id": 31,
         "address": 80,
         "quantity": 4,
-        "timeout": 1
+        "timeout": 1,
+        "retries": 3
       },
       "mqtt_topic": "/candh/FSM60/ID4"
     },
@@ -69,7 +73,8 @@
         "unit_id": 31,
         "address": 80,
         "quantity": 4,
-        "timeout": 1
+        "timeout": 1,
+        "retries": 3
       },
       "mqtt_topic": "/candh/FSM60/ID5"
     },
@@ -82,7 +87,8 @@
         "unit_id": 31,
         "address": 80,
         "quantity": 4,
-        "timeout": 1
+        "timeout": 1,
+        "retries": 3
       },
       "mqtt_topic": "/candh/FSM60/ID6"
     }

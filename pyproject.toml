@@ -5,8 +5,8 @@ description = "Multi-device FSM60 Modbus TCP to MQTT Gateway"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "pymodbus>=3.6.9,<4.0",
-    "paho-mqtt>=1.6.1,<3.0"
+    "pymodbus==3.6.9",
+    "paho-mqtt>=1.6.1,<2.0"
 ]
 
 [project.scripts]

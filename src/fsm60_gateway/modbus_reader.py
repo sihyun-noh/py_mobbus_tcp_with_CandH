@@ -4,13 +4,20 @@ from pymodbus.client import ModbusTcpClient
 
 
 class FSM60ModbusReader:
-    def __init__(self, host, port, unit_id, address, quantity, timeout=1):
+    def __init__(self, host, port, unit_id, address, quantity, timeout=1, retries=3):
         self.host = host
         self.port = int(port)
         self.unit_id = int(unit_id)
         self.address = int(address)
         self.quantity = int(quantity)
         self.timeout = float(timeout)
+        self.retries = int(retries)
+        self.client = ModbusTcpClient(
+            host=self.host,
+            port=self.port,
+            timeout=self.timeout,
+            retries=self.retries,
+        )
 
     @staticmethod
     def regs_to_float_be(w0, w1):
@@ -48,31 +55,35 @@ class FSM60ModbusReader:
 
         return read_input_registers(**kwargs)
 
+    def connect(self):
+        if self.client.is_socket_open():
+            return True
+
+        return self.client.connect()
+
+    def close(self):
+        self.client.close()
+
     def read_once(self):
-        client = ModbusTcpClient(
-            host=self.host,
-            port=self.port,
-            timeout=self.timeout,
-        )
+        if not self.connect():
+            raise ConnectionError(f"Modbus connect failed: {self.host}:{self.port}")
 
-        try:
-            if not client.connect():
-                raise ConnectionError(f"Modbus connect failed: {self.host}:{self.port}")
+        result = self._read_input_registers(self.client)
 
-            result = self._read_input_registers(client)
+        if result.isError():
+            raise RuntimeError(
+                "Modbus read_input_registers failed "
+                f"host={self.host} port={self.port} unit_id={self.unit_id} "
+                f"address={self.address} quantity={self.quantity} "
+                f"timeout={self.timeout} retries={self.retries} error={result}"
+            )
 
-            if result.isError():
-                raise RuntimeError(f"Modbus error: {result}")
+        registers = result.registers
 
-            registers = result.registers
+        if len(registers) < 4:
+            raise RuntimeError(f"Register length error: {registers}")
 
-            if len(registers) < 4:
-                raise RuntimeError(f"Register length error: {registers}")
-
-            return self.parse_registers(registers)
-
-        finally:
-            client.close()
+        return self.parse_registers(registers)
 
     def parse_registers(self, registers):
         return {
