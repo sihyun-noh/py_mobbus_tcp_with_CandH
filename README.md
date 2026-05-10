@@ -95,6 +95,8 @@ nano config.json
 
 다만 연결 실패나 read timeout이 발생한 장비는 해당 timeout만큼 순차 루프를 막을 수 있습니다. 그래서 응답 없는 장비가 여러 대 있으면 실제 cycle은 `poll_interval`보다 길어집니다. 이때 한 번 실패한 장비는 `reconnect_interval` 동안 건너뛰고, 시간이 지난 뒤 다시 연결을 시도합니다.
 
+재연결 시도가 여러 장비에 한꺼번에 몰리면 다시 timeout 공백이 길어질 수 있으므로, 기본값은 한 cycle에 재연결 대상 1대만 시도합니다.
+
 전체 cycle을 약 6초로 만들려면:
 
 ```json
@@ -105,6 +107,12 @@ nano config.json
 
 ```json
 "reconnect_interval": 10
+```
+
+한 cycle에서 재연결을 시도할 최대 장비 수:
+
+```json
+"max_reconnect_attempts_per_cycle": 1
 ```
 
 ## word_order

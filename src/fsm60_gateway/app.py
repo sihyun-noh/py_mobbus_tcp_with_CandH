@@ -71,6 +71,7 @@ def run(config: dict):
     mqtt_cfg = config["mqtt"]
     devices = config["devices"]
     poll_interval = float(config.get("poll_interval", 1.0))
+    max_reconnect_attempts = int(config.get("max_reconnect_attempts_per_cycle", 1))
     default_word_order = config.get("word_order", "be")
 
     publisher = MQTTPublisher(
@@ -88,6 +89,7 @@ def run(config: dict):
     try:
         while RUNNING:
             cycle_start = time.time()
+            reconnect_attempts = 0
 
             for idx, device_cfg in enumerate(devices):
                 if not RUNNING:
@@ -101,6 +103,10 @@ def run(config: dict):
                     reader = readers[device_id]
                     if reader.seconds_until_retry() > 0:
                         continue
+                    if reader.needs_reconnect():
+                        if reconnect_attempts >= max_reconnect_attempts:
+                            continue
+                        reconnect_attempts += 1
 
                     parsed = reader.read_once()
                     payload = build_payload(device_cfg, parsed, word_order)

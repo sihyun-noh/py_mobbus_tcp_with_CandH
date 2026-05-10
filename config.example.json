@@ -6,6 +6,7 @@
     "retain": false
   },
   "poll_interval": 1.0,
+  "max_reconnect_attempts_per_cycle": 1,
   "word_order": "be",
   "devices": [
     {

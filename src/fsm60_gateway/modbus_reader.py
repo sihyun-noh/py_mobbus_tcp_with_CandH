@@ -25,6 +25,7 @@ class FSM60ModbusReader:
         self.retries = int(retries)
         self.reconnect_interval = float(reconnect_interval)
         self.next_connect_time = 0.0
+        self.has_failed = False
         self.client = ModbusTcpClient(
             host=self.host,
             port=self.port,
@@ -80,6 +81,9 @@ class FSM60ModbusReader:
     def seconds_until_retry(self):
         return max(0.0, self.next_connect_time - time.monotonic())
 
+    def needs_reconnect(self):
+        return self.has_failed and self.seconds_until_retry() <= 0 and not self.client.is_socket_open()
+
     def read_once(self):
         wait_time = self.seconds_until_retry()
         if wait_time > 0:
@@ -106,10 +110,12 @@ class FSM60ModbusReader:
             if len(registers) < 4:
                 raise RuntimeError(f"Register length error: {registers}")
 
+            self.has_failed = False
             self.next_connect_time = 0.0
             return self.parse_registers(registers)
         except Exception:
             self.close()
+            self.has_failed = True
             self.next_connect_time = time.monotonic() + self.reconnect_interval
             raise
 
