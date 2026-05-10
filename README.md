@@ -78,19 +78,33 @@ nano config.json
 {
   "device": "FSM60",
   "id": "ID1",
-  "modbus_host": "192.168.50.50",
-  "modbus_port": 7070,
-  "unit_id": 31,
-  "address": 80,
+  "host": "192.168.50.50",
   "instant": 12.34,
   "total": 5678.9,
-  "instant_be": 12.34,
-  "total_be": 5678.9,
-  "instant_sw": 0.0,
-  "total_sw": 0.0,
-  "raw": [16709, 28836, 17842, 52429],
   "timestamp": 1710000000.123
 }
+```
+
+디버깅용 raw register가 필요하면 장비 설정에 `"include_raw": true`를 추가하세요.
+
+## Polling 주기
+
+`poll_interval`은 장비 1대당 대기 시간이 아니라 전체 polling cycle 기준입니다.
+
+현재 예시처럼 장비가 6대이고 `"poll_interval": 1.0`이면, 프로그램은 6대를 설정 순서대로 가능한 빨리 순차 읽기한 뒤 전체 cycle 시간이 1초보다 짧을 때만 남은 시간을 쉽니다. 각 장비를 1초 간격으로 읽어서 전체 6초 cycle을 만드는 구조는 아닙니다.
+
+다만 연결 실패나 read timeout이 발생한 장비는 해당 timeout만큼 순차 루프를 막을 수 있습니다. 그래서 응답 없는 장비가 여러 대 있으면 실제 cycle은 `poll_interval`보다 길어집니다. 이때 한 번 실패한 장비는 `reconnect_interval` 동안 건너뛰고, 시간이 지난 뒤 다시 연결을 시도합니다.
+
+전체 cycle을 약 6초로 만들려면:
+
+```json
+"poll_interval": 6.0
+```
+
+응답 없는 장비의 재연결 시도 간격:
+
+```json
+"reconnect_interval": 10
 ```
 
 ## word_order

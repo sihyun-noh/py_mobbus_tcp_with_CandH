@@ -37,22 +37,19 @@ def build_payload(device_cfg: dict, parsed: dict, selected_word_order: str) -> d
         instant = parsed["instant_be"]
         total = parsed["total_be"]
 
-    return {
+    payload = {
         "device": device_cfg.get("device", "FSM60"),
         "id": device_cfg.get("id"),
-        "modbus_host": modbus_cfg["host"],
-        "modbus_port": modbus_cfg["port"],
-        "unit_id": modbus_cfg["unit_id"],
-        "address": modbus_cfg["address"],
+        "host": modbus_cfg["host"],
         "instant": instant,
         "total": total,
-        "instant_be": parsed["instant_be"],
-        "total_be": parsed["total_be"],
-        "instant_sw": parsed["instant_sw"],
-        "total_sw": parsed["total_sw"],
-        "raw": parsed["raw"],
         "timestamp": time.time(),
     }
+
+    if device_cfg.get("include_raw", False):
+        payload["raw"] = parsed["raw"]
+
+    return payload
 
 
 def build_reader(device_cfg: dict) -> FSM60ModbusReader:
@@ -66,6 +63,7 @@ def build_reader(device_cfg: dict) -> FSM60ModbusReader:
         quantity=modbus_cfg["quantity"],
         timeout=modbus_cfg.get("timeout", 1),
         retries=modbus_cfg.get("retries", 3),
+        reconnect_interval=modbus_cfg.get("reconnect_interval", 10),
     )
 
 
@@ -100,7 +98,11 @@ def run(config: dict):
                 word_order = device_cfg.get("word_order", default_word_order)
 
                 try:
-                    parsed = readers[device_id].read_once()
+                    reader = readers[device_id]
+                    if reader.seconds_until_retry() > 0:
+                        continue
+
+                    parsed = reader.read_once()
                     payload = build_payload(device_cfg, parsed, word_order)
                     payload_json = publisher.publish(topic, payload)
 

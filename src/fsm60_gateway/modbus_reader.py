@@ -1,10 +1,21 @@
 import inspect
 import struct
+import time
 from pymodbus.client import ModbusTcpClient
 
 
 class FSM60ModbusReader:
-    def __init__(self, host, port, unit_id, address, quantity, timeout=1, retries=3):
+    def __init__(
+        self,
+        host,
+        port,
+        unit_id,
+        address,
+        quantity,
+        timeout=1,
+        retries=3,
+        reconnect_interval=10,
+    ):
         self.host = host
         self.port = int(port)
         self.unit_id = int(unit_id)
@@ -12,6 +23,8 @@ class FSM60ModbusReader:
         self.quantity = int(quantity)
         self.timeout = float(timeout)
         self.retries = int(retries)
+        self.reconnect_interval = float(reconnect_interval)
+        self.next_connect_time = 0.0
         self.client = ModbusTcpClient(
             host=self.host,
             port=self.port,
@@ -64,26 +77,41 @@ class FSM60ModbusReader:
     def close(self):
         self.client.close()
 
+    def seconds_until_retry(self):
+        return max(0.0, self.next_connect_time - time.monotonic())
+
     def read_once(self):
-        if not self.connect():
-            raise ConnectionError(f"Modbus connect failed: {self.host}:{self.port}")
-
-        result = self._read_input_registers(self.client)
-
-        if result.isError():
-            raise RuntimeError(
-                "Modbus read_input_registers failed "
-                f"host={self.host} port={self.port} unit_id={self.unit_id} "
-                f"address={self.address} quantity={self.quantity} "
-                f"timeout={self.timeout} retries={self.retries} error={result}"
+        wait_time = self.seconds_until_retry()
+        if wait_time > 0:
+            raise ConnectionError(
+                f"Modbus reconnect pending: {self.host}:{self.port} retry_after={wait_time:.1f}s"
             )
 
-        registers = result.registers
+        try:
+            if not self.connect():
+                raise ConnectionError(f"Modbus connect failed: {self.host}:{self.port}")
 
-        if len(registers) < 4:
-            raise RuntimeError(f"Register length error: {registers}")
+            result = self._read_input_registers(self.client)
 
-        return self.parse_registers(registers)
+            if result.isError():
+                raise RuntimeError(
+                    "Modbus read_input_registers failed "
+                    f"host={self.host} port={self.port} unit_id={self.unit_id} "
+                    f"address={self.address} quantity={self.quantity} "
+                    f"timeout={self.timeout} retries={self.retries} error={result}"
+                )
+
+            registers = result.registers
+
+            if len(registers) < 4:
+                raise RuntimeError(f"Register length error: {registers}")
+
+            self.next_connect_time = 0.0
+            return self.parse_registers(registers)
+        except Exception:
+            self.close()
+            self.next_connect_time = time.monotonic() + self.reconnect_interval
+            raise
 
     def parse_registers(self, registers):
         return {
