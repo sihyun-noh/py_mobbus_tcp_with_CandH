@@ -1,0 +1,17 @@
+[project]
+name = "fsm60-gateway"
+version = "0.1.0"
+description = "Multi-device FSM60 Modbus TCP to MQTT Gateway"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pymodbus>=3.6.9",
+    "paho-mqtt>=1.6.1"
+]
+
+[project.scripts]
+fsm60-gateway = "fsm60_gateway.app:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

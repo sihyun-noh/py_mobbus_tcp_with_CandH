@@ -1,0 +1,90 @@
+{
+  "mqtt": {
+    "host": "192.168.50.12",
+    "port": 1884,
+    "qos": 2,
+    "retain": false
+  },
+  "poll_interval": 1.0,
+  "word_order": "be",
+  "devices": [
+    {
+      "device": "FSM60",
+      "id": "ID1",
+      "modbus": {
+        "host": "192.168.50.50",
+        "port": 7070,
+        "unit_id": 31,
+        "address": 80,
+        "quantity": 4,
+        "timeout": 1
+      },
+      "mqtt_topic": "/candh/FSM60/ID1"
+    },
+    {
+      "device": "FSM60",
+      "id": "ID2",
+      "modbus": {
+        "host": "192.168.50.51",
+        "port": 7071,
+        "unit_id": 31,
+        "address": 80,
+        "quantity": 4,
+        "timeout": 1
+      },
+      "mqtt_topic": "/candh/FSM60/ID2"
+    },
+    {
+      "device": "FSM60",
+      "id": "ID3",
+      "modbus": {
+        "host": "192.168.50.52",
+        "port": 7072,
+        "unit_id": 31,
+        "address": 80,
+        "quantity": 4,
+        "timeout": 1
+      },
+      "mqtt_topic": "/candh/FSM60/ID3"
+    },
+    {
+      "device": "FSM60",
+      "id": "ID4",
+      "modbus": {
+        "host": "192.168.50.53",
+        "port": 7073,
+        "unit_id": 31,
+        "address": 80,
+        "quantity": 4,
+        "timeout": 1
+      },
+      "mqtt_topic": "/candh/FSM60/ID4"
+    },
+    {
+      "device": "FSM60",
+      "id": "ID5",
+      "modbus": {
+        "host": "192.168.50.54",
+        "port": 7074,
+        "unit_id": 31,
+        "address": 80,
+        "quantity": 4,
+        "timeout": 1
+      },
+      "mqtt_topic": "/candh/FSM60/ID5"
+    },
+    {
+      "device": "FSM60",
+      "id": "ID6",
+      "modbus": {
+        "host": "192.168.50.55",
+        "port": 7075,
+        "unit_id": 31,
+        "address": 80,
+        "quantity": 4,
+        "timeout": 1
+      },
+      "mqtt_topic": "/candh/FSM60/ID6"
+    }
+  ]
+}

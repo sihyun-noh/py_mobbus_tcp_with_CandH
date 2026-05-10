@@ -1,0 +1,15 @@
+[Unit]
+Description=FSM60 Modbus TCP to MQTT Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/fsm60-gateway
+ExecStart=/opt/fsm60-gateway/venv/bin/fsm60-gateway --config /opt/fsm60-gateway/config.json
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
