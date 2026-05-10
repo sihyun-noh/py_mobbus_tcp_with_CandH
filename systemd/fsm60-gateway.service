@@ -5,9 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=ubuntu
-WorkingDirectory=/opt/fsm60-gateway
-ExecStart=/opt/fsm60-gateway/venv/bin/fsm60-gateway --config /opt/fsm60-gateway/config.json
+User=__SERVICE_USER__
+WorkingDirectory=__APP_DIR__
+ExecStart=__APP_DIR__/venv/bin/fsm60-gateway --config __APP_DIR__/config.json
 Restart=always
 RestartSec=5
 

@@ -17,15 +17,17 @@
 
 ```bash
 cd fsm60_gateway_package
+./install.sh
+```
+
+`install.sh`는 현재 프로젝트 디렉터리에 `venv`와 `config.json`을 생성합니다. `/opt`로 복사하지 않으므로 설치 과정에는 `sudo`가 필요하지 않습니다.
+
+수동 설치:
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -e .
-```
-
-또는 일반 설치:
-
-```bash
-pip install .
 ```
 
 ## 실행
@@ -98,10 +100,10 @@ nano config.json
 
 ## systemd 서비스 등록
 
-예시 파일은 `systemd/fsm60-gateway.service`를 참고하세요.
+`./install.sh` 실행 후 현재 프로젝트 경로가 반영된 `fsm60-gateway.service`가 생성됩니다.
 
 ```bash
-sudo cp systemd/fsm60-gateway.service /etc/systemd/system/
+sudo cp fsm60-gateway.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable fsm60-gateway
 sudo systemctl start fsm60-gateway
