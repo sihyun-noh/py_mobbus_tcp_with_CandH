@@ -1,3 +1,4 @@
+import inspect
 import struct
 from pymodbus.client import ModbusTcpClient
 
@@ -21,6 +22,32 @@ class FSM60ModbusReader:
         raw = struct.pack(">HH", int(w1), int(w0))
         return struct.unpack(">f", raw)[0]
 
+    def _read_input_registers(self, client):
+        read_input_registers = client.read_input_registers
+        kwargs = {
+            "address": self.address,
+            "count": self.quantity,
+        }
+
+        try:
+            parameters = inspect.signature(read_input_registers).parameters
+        except (TypeError, ValueError):
+            parameters = {}
+
+        for unit_key in ("device_id", "slave", "unit"):
+            if unit_key in parameters:
+                kwargs[unit_key] = self.unit_id
+                return read_input_registers(**kwargs)
+
+        for unit_key in ("device_id", "slave", "unit"):
+            try:
+                return read_input_registers(**kwargs, **{unit_key: self.unit_id})
+            except TypeError as exc:
+                if "unexpected keyword argument" not in str(exc):
+                    raise
+
+        return read_input_registers(**kwargs)
+
     def read_once(self):
         client = ModbusTcpClient(
             host=self.host,
@@ -32,20 +59,7 @@ class FSM60ModbusReader:
             if not client.connect():
                 raise ConnectionError(f"Modbus connect failed: {self.host}:{self.port}")
 
-            # pymodbus 3.x는 slave= 사용.
-            # 일부 구버전 호환을 위해 TypeError 발생 시 unit=으로 재시도.
-            try:
-                result = client.read_input_registers(
-                    address=self.address,
-                    count=self.quantity,
-                    slave=self.unit_id,
-                )
-            except TypeError:
-                result = client.read_input_registers(
-                    address=self.address,
-                    count=self.quantity,
-                    unit=self.unit_id,
-                )
+            result = self._read_input_registers(client)
 
             if result.isError():
                 raise RuntimeError(f"Modbus error: {result}")

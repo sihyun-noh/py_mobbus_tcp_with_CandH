@@ -15,8 +15,22 @@
 
 ## 설치
 
+Ubuntu 22.04에서 처음 설치하는 경우:
+
 ```bash
-cd fsm60_gateway_package
+sudo apt update
+sudo apt install -y git python3 python3-venv python3-pip
+cd ~
+git clone https://github.com/sihyun-noh/py_mobbus_tcp_with_CandH.git
+cd py_mobbus_tcp_with_CandH
+chmod +x install.sh
+./install.sh
+```
+
+프로젝트를 이미 내려받은 경우:
+
+```bash
+cd py_mobbus_tcp_with_CandH
 ./install.sh
 ```
 
@@ -33,21 +47,22 @@ pip install -e .
 ## 실행
 
 ```bash
-fsm60-gateway --config config.example.json
+./venv/bin/fsm60-gateway --config config.json
 ```
 
 또는:
 
 ```bash
-python3 -m fsm60_gateway --config config.example.json
+source venv/bin/activate
+fsm60-gateway --config config.json
 ```
 
 ## 설정 파일
 
-`config.example.json`을 복사해서 현장 설정으로 사용하세요.
+`./install.sh` 실행 시 `config.json`이 없으면 `config.example.json`에서 자동 생성합니다.
+현장 설정에 맞게 MQTT 서버 주소, 포트, Modbus 장비 IP/포트 등을 수정하세요.
 
 ```bash
-cp config.example.json config.json
 nano config.json
 ```
 
@@ -100,7 +115,7 @@ nano config.json
 
 ## systemd 서비스 등록
 
-`./install.sh` 실행 후 현재 프로젝트 경로가 반영된 `fsm60-gateway.service`가 생성됩니다.
+수동 실행이 정상일 때만 systemd 서비스로 등록하세요. `./install.sh` 실행 후 현재 프로젝트 경로가 반영된 `fsm60-gateway.service`가 생성됩니다.
 
 ```bash
 sudo cp fsm60-gateway.service /etc/systemd/system/
@@ -115,3 +130,11 @@ sudo systemctl start fsm60-gateway
 systemctl status fsm60-gateway
 journalctl -u fsm60-gateway -f
 ```
+
+설정 변경 후 재시작:
+
+```bash
+sudo systemctl restart fsm60-gateway
+```
+
+일반 설치와 수동 실행에는 `sudo`가 필요하지 않습니다. `sudo`는 `/etc/systemd/system/`에 서비스 파일을 복사하거나 `systemctl`로 서비스를 등록/시작할 때만 필요합니다.

@@ -1,0 +1,25 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Installer/runtime generated files
+config.json
+fsm60-gateway.service
+
+# Logs and local editor files
+*.log
+.DS_Store
+.vscode/
+.idea/
