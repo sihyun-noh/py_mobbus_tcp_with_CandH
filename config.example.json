@@ -5,9 +5,9 @@
     "qos": 2,
     "retain": false
   },
-  "poll_interval": 1.0,
+  "poll_interval": 0.5,
   "queue_size": 100,
-  "word_order": "be",
+  "word_order": "swap",
   "devices": [
     {
       "device": "FSM60",

@@ -117,14 +117,14 @@ nano config.json
 
 `poll_interval`은 각 센서 worker의 읽기 주기입니다.
 
-현재 예시처럼 장비가 6대이고 `"poll_interval": 1.0`이면, 각 센서 thread가 독립적으로 약 1초마다 자기 센서를 읽고 payload를 queue에 넣습니다. ID2가 timeout이어도 ID1, ID4, ID6 같은 다른 센서 thread의 읽기 주기를 막지 않습니다.
+현재 예시처럼 장비가 6대이고 `"poll_interval": 0.5`이면, 각 센서 thread가 독립적으로 약 0.5초마다 자기 센서를 읽고 payload를 queue에 넣습니다. ID2가 timeout이어도 ID1, ID4, ID6 같은 다른 센서 thread의 읽기 주기를 막지 않습니다.
 
 장비별 주기를 다르게 주고 싶으면 각 device에 `poll_interval`을 추가하세요.
 
 전체 기본 주기:
 
 ```json
-"poll_interval": 1.0
+"poll_interval": 0.5
 ```
 
 장비별 주기:
@@ -152,16 +152,16 @@ MQTT publish 대기 queue 크기:
 
 ## word_order
 
-기본값은 `"be"`입니다.
-
-```json
-"word_order": "be"
-```
-
-값이 이상하면 `"swap"`으로 변경해서 테스트하세요.
+기본 예제값은 현장 테스트 결과에 맞춰 `"swap"`입니다.
 
 ```json
 "word_order": "swap"
+```
+
+값이 이상하면 `"be"`로 변경해서 테스트하세요.
+
+```json
+"word_order": "be"
 ```
 
 장비별로 다르게 적용할 수도 있습니다.

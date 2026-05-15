@@ -83,11 +83,12 @@ class SensorWorker(threading.Thread):
         try:
             while not self.stop_event.is_set():
                 cycle_start = time.monotonic()
+                retry_wait = self.reader.seconds_until_retry()
+                if retry_wait > 0:
+                    self.stop_event.wait(min(retry_wait, self.poll_interval))
+                    continue
 
                 try:
-                    if self.reader.seconds_until_retry() > 0:
-                        continue
-
                     parsed = self.reader.read_once()
                     payload = build_payload(self.device_cfg, parsed, self.word_order)
                     self.payload_queue.put((device_id, topic, payload), timeout=1)
